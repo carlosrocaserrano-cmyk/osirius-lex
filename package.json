@@ -17,6 +17,8 @@
     "docx": "^9.5.1",
     "docxtemplater": "^3.67.6",
     "file-saver": "^2.0.5",
+    "firebase": "^12.8.0",
+    "firebase-admin": "^13.6.0",
     "jspdf": "^4.0.0",
     "lucide-react": "^0.562.0",
     "next": "16.1.4",

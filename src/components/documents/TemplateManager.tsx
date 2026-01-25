@@ -26,7 +26,7 @@ export default function TemplateManager() {
     }
 
     return (
-        <div className="bg-[#1e293b] p-6 rounded-xl border border-gray-700 space-y-4">
+        <div className="bg-[#1e1e24] p-6 rounded-xl border border-gray-800 space-y-4">
             <h3 className="text-lg font-bold text-white mb-4">Nueva Plantilla</h3>
 
             <div className="grid grid-cols-2 gap-4">
@@ -36,7 +36,7 @@ export default function TemplateManager() {
                         type="text"
                         value={newData.name}
                         onChange={e => setNewData({ ...newData, name: e.target.value })}
-                        className="w-full bg-[#0f172a] border border-gray-700 rounded-lg px-3 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full bg-[#25252d] border border-gray-700 rounded-lg px-3 py-2 text-white outline-none focus:border-lime-500 focus:ring-1 focus:ring-lime-500 transition-colors"
                         placeholder="Ej: Contrato de Iguala"
                     />
                 </div>
@@ -45,12 +45,13 @@ export default function TemplateManager() {
                     <select
                         value={newData.category}
                         onChange={e => setNewData({ ...newData, category: e.target.value })}
-                        className="w-full bg-[#0f172a] border border-gray-700 rounded-lg px-3 py-2 text-white outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full bg-[#25252d] border border-gray-700 rounded-lg px-3 py-2 text-white outline-none focus:border-lime-500 focus:ring-1 focus:ring-lime-500 transition-colors"
                     >
                         <option>Contratos</option>
                         <option>Demandas</option>
                         <option>Cartas</option>
                         <option>Memoriales</option>
+                        <option>Otros</option>
                     </select>
                 </div>
             </div>
@@ -61,11 +62,11 @@ export default function TemplateManager() {
                     <span className="ml-2 text-gray-500 font-normal">(Usa {'{{variable}}'} para insertar datos dinámicos)</span>
                 </label>
                 <div className="flex gap-2 mb-2 flex-wrap">
-                    {['client_name', 'doc_number', 'case_caratula'].map(v => (
+                    {['client_name', 'doc_number', 'case_caratula', 'case_ianus', 'case_expediente', 'today_date'].map(v => (
                         <button
                             key={v}
                             onClick={() => setNewData({ ...newData, content: newData.content + ` {{${v}}} ` })}
-                            className="bg-gray-800 text-xs px-2 py-1 rounded text-indigo-400 hover:text-indigo-300"
+                            className="bg-[#25252d] border border-lime-500/30 text-xs px-2 py-1 rounded text-lime-400 hover:text-white hover:bg-lime-500/20 transition-colors"
                         >
                             {v}
                         </button>
@@ -75,7 +76,7 @@ export default function TemplateManager() {
                     value={newData.content}
                     onChange={e => setNewData({ ...newData, content: e.target.value })}
                     rows={10}
-                    className="w-full bg-[#0f172a] border border-gray-700 rounded-lg px-3 py-2 text-white font-mono text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full bg-[#25252d] border border-gray-700 rounded-lg px-3 py-2 text-white font-mono text-sm outline-none focus:border-lime-500 focus:ring-1 focus:ring-lime-500 transition-colors"
                     placeholder="Escribe el contenido del documento aquí..."
                 />
             </div>
@@ -83,13 +84,13 @@ export default function TemplateManager() {
             <div className="flex justify-end gap-3 pt-2">
                 <button
                     onClick={() => setIsCreating(false)}
-                    className="px-4 py-2 text-sm text-gray-400 hover:text-white"
+                    className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
                 >
                     Cancelar
                 </button>
                 <button
                     onClick={handleSave}
-                    className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+                    className="bg-lime-500 hover:bg-lime-400 text-black px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-lg shadow-lime-500/20 transition-colors"
                 >
                     <Save size={16} />
                     Guardar Plantilla

@@ -202,6 +202,23 @@ export function ClientDetails({ client, templates = [] }: { client: any, templat
             {/* FINANCE SECTION */}
             {activeTab === 'finance' && (
                 <div className="space-y-6">
+                    {/* Invoice Toggle */}
+                    <div className="glass-card p-4 flex items-center justify-between border-l-4 border-l-lime-500">
+                        <div>
+                            <h3 className="font-bold text-white">Facturación</h3>
+                            <p className="text-sm text-gray-400">Habilitar si el cliente requiere Factura A / Responsable Inscripto</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                className="sr-only peer"
+                                defaultChecked={client.wantsInvoice}
+                                onChange={(e) => handleInvoiceToggle(e.target.checked)}
+                            />
+                            <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-lime-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-lime-500"></div>
+                        </label>
+                    </div>
+
                     <div className="glass-card p-8 flex flex-col items-center justify-center gap-4 text-center border-dashed border-2 border-gray-700 hover:border-lime-500/50 transition-colors group">
                         <div className="w-16 h-16 rounded-full bg-gray-800 group-hover:bg-lime-500/20 flex items-center justify-center transition-colors">
                             <DollarSign size={32} className="text-gray-400 group-hover:text-lime-400" />
@@ -257,6 +274,9 @@ export function ClientDetails({ client, templates = [] }: { client: any, templat
                         )}
                     </div>
 
+                    {/* EXPENSE TABLE INTEGRATION */}
+                    <ExpenseTable expenses={client.expenses || []} clientId={client.id} />
+
                     <div>
                         <h3 className="text-lg font-bold text-white mb-4">Historial de Pagos</h3>
                         <div className="space-y-3">
@@ -289,8 +309,7 @@ export function ClientDetails({ client, templates = [] }: { client: any, templat
                         </div>
                     </div>
                 </div>
-            )
-            }
+            )}
 
             {/* DOCUMENTS SECTION */}
             {
@@ -376,43 +395,45 @@ export function ClientDetails({ client, templates = [] }: { client: any, templat
                 )
             }
 
-            {activeTab === 'profile' && (
-                <div className="space-y-6">
-                    <div className="bg-[#1e1e24] p-6 rounded-lg border border-gray-800">
-                        <h3 className="text-xl font-bold text-white mb-4">Información del Cliente</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-gray-500 text-xs uppercase font-bold mb-1">Nombre Completo</label>
-                                <p className="text-white font-medium">{client.name}</p>
-                            </div>
-                            <div>
-                                <label className="block text-gray-500 text-xs uppercase font-bold mb-1">Documento (CI/NIT)</label>
-                                <p className="text-white font-medium">{client.identityDoc || "N/A"}</p>
-                            </div>
-                            <div>
-                                <label className="block text-gray-500 text-xs uppercase font-bold mb-1">Email</label>
-                                <p className="text-white font-medium">{client.email || "N/A"}</p>
-                            </div>
-                            <div>
-                                <label className="block text-gray-500 text-xs uppercase font-bold mb-1">Teléfono</label>
-                                <p className="text-white font-medium">{client.phone || "N/A"}</p>
-                            </div>
-                            <div className="md:col-span-2">
-                                <label className="block text-gray-500 text-xs uppercase font-bold mb-1">Dirección</label>
-                                <p className="text-white font-medium">{client.address || "N/A"}</p>
-                            </div>
-                            {client.representative && (
-                                <div className="md:col-span-2">
-                                    <label className="block text-gray-500 text-xs uppercase font-bold mb-1">Representante Legal</label>
-                                    <p className="text-white font-medium">{client.representative}</p>
+            {
+                activeTab === 'profile' && (
+                    <div className="space-y-6">
+                        <div className="bg-[#1e1e24] p-6 rounded-lg border border-gray-800">
+                            <h3 className="text-xl font-bold text-white mb-4">Información del Cliente</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-gray-500 text-xs uppercase font-bold mb-1">Nombre Completo</label>
+                                    <p className="text-white font-medium">{client.name}</p>
                                 </div>
-                            )}
+                                <div>
+                                    <label className="block text-gray-500 text-xs uppercase font-bold mb-1">Documento (CI/NIT)</label>
+                                    <p className="text-white font-medium">{client.identityDoc || "N/A"}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-gray-500 text-xs uppercase font-bold mb-1">Email</label>
+                                    <p className="text-white font-medium">{client.email || "N/A"}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-gray-500 text-xs uppercase font-bold mb-1">Teléfono</label>
+                                    <p className="text-white font-medium">{client.phone || "N/A"}</p>
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-gray-500 text-xs uppercase font-bold mb-1">Dirección</label>
+                                    <p className="text-white font-medium">{client.address || "N/A"}</p>
+                                </div>
+                                {client.representative && (
+                                    <div className="md:col-span-2">
+                                        <label className="block text-gray-500 text-xs uppercase font-bold mb-1">Representante Legal</label>
+                                        <p className="text-white font-medium">{client.representative}</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    </div>
 
-                    <DynamicFieldEditor clientId={client.id} initialMetadata={client.metadata} />
-                </div>
-            )}
+                        <DynamicFieldEditor clientId={client.id} initialMetadata={client.metadata} />
+                    </div>
+                )
+            }
 
             {/* MODALS */}
             <AddCaseModal
@@ -443,23 +464,27 @@ export function ClientDetails({ client, templates = [] }: { client: any, templat
                 client={client}
             />
 
-            {selectedCase && (
-                <EditCaseModal
-                    isOpen={isEditCaseOpen}
-                    onClose={() => setIsEditCaseOpen(false)}
-                    clientId={client.id}
-                    caseData={selectedCase}
-                />
-            )}
+            {
+                selectedCase && (
+                    <EditCaseModal
+                        isOpen={isEditCaseOpen}
+                        onClose={() => setIsEditCaseOpen(false)}
+                        clientId={client.id}
+                        caseData={selectedCase}
+                    />
+                )
+            }
 
-            {selectedPlan && (
-                <EditPaymentPlanModal
-                    isOpen={isEditPaymentPlanOpen}
-                    onClose={() => setIsEditPaymentPlanOpen(false)}
-                    clientId={client.id}
-                    plan={selectedPlan}
-                />
-            )}
+            {
+                selectedPlan && (
+                    <EditPaymentPlanModal
+                        isOpen={isEditPaymentPlanOpen}
+                        onClose={() => setIsEditPaymentPlanOpen(false)}
+                        clientId={client.id}
+                        plan={selectedPlan}
+                    />
+                )
+            }
 
 
 

@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { renderTemplate, extractVariables } from "@/lib/docs/template-engine";
+import { addXP } from "@/actions/gamification-actions";
 
 // --- Templates ---
 
@@ -79,6 +80,8 @@ export async function generateDocument(templateId: string, contextData: { client
             clientId: contextData.clientId
         }
     });
+
+    await addXP(50, "Documento Generado");
 
     revalidatePath("/documentos");
     if (contextData.clientId) revalidatePath(`/clientes/${contextData.clientId}`);

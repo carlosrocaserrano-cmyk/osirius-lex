@@ -2,25 +2,27 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { addXP } from "@/actions/gamification-actions";
 
 export async function getFinancialStats() {
-    // 1. Get all payments (Income)
-    const payments = await prisma.payment.findMany({
+    // 1. Get total Income (Payments)
+    const incomeAgg = await prisma.payment.aggregate({
+        _sum: { amount: true },
         where: { status: 'Pagado' }
     });
 
-    // 2. Get all expenses (Outcome)
-    const expenses = await prisma.expense.findMany();
+    // 2. Get total Outcome (Expenses)
+    const expenseAgg = await prisma.expense.aggregate({
+        _sum: { amount: true }
+    });
 
     // 3. Calculate Totals
-    const totalIncome = payments.reduce((sum, p) => sum + p.amount, 0);
-    const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+    const totalIncome = incomeAgg._sum.amount || 0;
+    const totalExpenses = expenseAgg._sum.amount || 0;
     const netProfit = totalIncome - totalExpenses;
 
     // 4. Tax Estimation (Simple Model for Bolivia)
     // IVA (13%) + IT (3%) = ~16% of Income
-    // Deductible expenses reduce the taxable base for IUE, but keeping it simple for now:
-    // We'll just estimate tax liability on the gross income for visual ref.
     const taxEstimate = totalIncome * 0.16;
 
     return {
@@ -92,6 +94,8 @@ export async function createGlobalExpense(formData: FormData) {
         }
     });
 
+    await addXP(20, "Gasto Registrado");
+
     revalidatePath("/finanzas");
 }
 
@@ -120,6 +124,8 @@ export async function createExpense(clientId: string, formData: FormData) {
             caseId: caseId || undefined
         }
     });
+
+    await addXP(20, "Gasto Registrado");
 
     revalidatePath(`/clientes/${clientId}`);
     if (caseId) revalidatePath(`/expedientes/${caseId}`);

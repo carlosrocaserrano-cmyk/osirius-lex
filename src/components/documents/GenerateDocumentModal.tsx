@@ -100,10 +100,10 @@ export default function GenerateDocumentModal({ isOpen, onClose, preSelectedClie
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-[#1e293b] rounded-xl border border-gray-700 shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-                <div className="p-4 border-b border-gray-700 flex justify-between items-center bg-[#0f172a]">
-                    <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                        <FileText className="text-indigo-500" size={20} />
+            <div className="bg-[#1e1e24] rounded-xl border border-gray-800 shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                <div className="p-4 border-b border-gray-800 flex justify-between items-center bg-[#25252d]">
+                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                        <FileText className="text-lime-500" size={20} />
                         Generar Documento
                     </h2>
                     <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
@@ -111,21 +111,21 @@ export default function GenerateDocumentModal({ isOpen, onClose, preSelectedClie
                     </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-6">
+                <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent">
                     {step === 1 && (
                         <div className="space-y-4">
-                            <h3 className="text-gray-300 font-medium mb-2">1. Selecciona una Plantilla</h3>
+                            <h3 className="text-lime-400 font-medium mb-2 uppercase text-xs tracking-wider">1. Selecciona una Plantilla</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 {templates.map(t => (
                                     <button
                                         key={t.id}
                                         onClick={() => setSelectedTemplate(t.id)}
                                         className={`p-4 rounded-lg border text-left transition-all ${selectedTemplate === t.id
-                                            ? 'bg-indigo-600/20 border-indigo-500 text-white'
-                                            : 'bg-[#0f172a] border-gray-700 text-gray-400 hover:border-gray-500'
+                                            ? 'bg-lime-500/10 border-lime-500 text-white'
+                                            : 'bg-[#25252d] border-gray-700 text-gray-400 hover:border-gray-500 hover:text-gray-200'
                                             }`}
                                     >
-                                        <div className="font-semibold">{t.name}</div>
+                                        <div className="font-bold">{t.name}</div>
                                         <div className="text-xs opacity-70 mt-1">{t.category}</div>
                                     </button>
                                 ))}
@@ -135,12 +135,12 @@ export default function GenerateDocumentModal({ isOpen, onClose, preSelectedClie
 
                     {step === 2 && (
                         <div className="space-y-6">
-                            <h3 className="text-gray-300 font-medium">2. Selecciona el Contexto</h3>
+                            <h3 className="text-lime-400 font-medium uppercase text-xs tracking-wider">2. Selecciona el Contexto</h3>
 
                             <div>
                                 <label className="block text-sm text-gray-400 mb-1">Cliente</label>
                                 <select
-                                    className="w-full bg-[#0f172a] border border-gray-700 rounded-lg px-3 py-2 text-white"
+                                    className="w-full bg-[#1a1a20] border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-lime-500 outline-none"
                                     value={selectedClient}
                                     onChange={(e) => setSelectedClient(e.target.value)}
                                 >
@@ -154,7 +154,7 @@ export default function GenerateDocumentModal({ isOpen, onClose, preSelectedClie
                             <div>
                                 <label className="block text-sm text-gray-400 mb-1">Caso (Opcional)</label>
                                 <select
-                                    className="w-full bg-[#0f172a] border border-gray-700 rounded-lg px-3 py-2 text-white"
+                                    className="w-full bg-[#1a1a20] border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-lime-500 outline-none"
                                     value={selectedCase}
                                     onChange={(e) => setSelectedCase(e.target.value)}
                                     disabled={!selectedClient}
@@ -170,7 +170,7 @@ export default function GenerateDocumentModal({ isOpen, onClose, preSelectedClie
 
                     {step === 3 && (
                         <div className="space-y-4 h-full flex flex-col">
-                            <h3 className="text-gray-300 font-medium">3. Vista Previa</h3>
+                            <h3 className="text-lime-400 font-medium uppercase text-xs tracking-wider">3. Vista Previa</h3>
                             <div className="flex-1 bg-white text-black p-8 rounded shadow-inner overflow-y-auto font-serif text-sm whitespace-pre-wrap min-h-[300px]">
                                 {previewContent}
                             </div>
@@ -178,11 +178,11 @@ export default function GenerateDocumentModal({ isOpen, onClose, preSelectedClie
                     )}
                 </div>
 
-                <div className="p-4 border-t border-gray-700 bg-[#0f172a] flex justify-between">
+                <div className="p-4 border-t border-gray-800 bg-[#25252d] flex justify-between">
                     {step > 1 && (
                         <button
                             onClick={() => setStep(step - 1)}
-                            className="px-4 py-2 text-gray-400 hover:text-white"
+                            className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
                         >
                             Atrás
                         </button>
@@ -192,7 +192,7 @@ export default function GenerateDocumentModal({ isOpen, onClose, preSelectedClie
                             <button
                                 disabled={!selectedTemplate}
                                 onClick={() => setStep(2)}
-                                className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg"
+                                className="bg-lime-500 hover:bg-lime-400 disabled:opacity-50 text-black font-bold px-6 py-2 rounded-lg transition-colors shadow-lg shadow-lime-500/20"
                             >
                                 Siguiente
                             </button>
@@ -201,7 +201,7 @@ export default function GenerateDocumentModal({ isOpen, onClose, preSelectedClie
                             <button
                                 onClick={handlePreview}
                                 disabled={loading}
-                                className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+                                className="bg-lime-500 hover:bg-lime-400 disabled:opacity-50 text-black font-bold px-6 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-lime-500/20"
                             >
                                 {loading ? <RefreshCw className="animate-spin" size={16} /> : null}
                                 Generar Vista Previa
@@ -210,7 +210,7 @@ export default function GenerateDocumentModal({ isOpen, onClose, preSelectedClie
                         {step === 3 && (
                             <button
                                 onClick={downloadPDF}
-                                className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+                                className="bg-lime-500 hover:bg-lime-400 text-black font-bold px-6 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-lime-500/20"
                             >
                                 <Download size={18} />
                                 Descargar PDF

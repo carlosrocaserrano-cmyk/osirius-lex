@@ -34,6 +34,8 @@ export async function createCase(clientId: string, formData: FormData) {
         }
     });
 
+    await addXP(150, "Nuevo Caso Iniciado");
+
     revalidatePath(`/clientes/${clientId}`);
 }
 
@@ -54,6 +56,8 @@ export async function createPayment(clientId: string, formData: FormData) {
             date: new Date()
         }
     });
+
+    await addXP(50, "Pago Registrado");
 
     revalidatePath(`/clientes/${clientId}`);
 }
@@ -307,6 +311,8 @@ export async function createClient(formData: FormData) {
             wantsInvoice
         }
     });
+
+    await addXP(100, "Nuevo Cliente");
 
     // Automated Contract Generation
     // We pass the new fields to the logic (simulated here since we lack a Blob store)
