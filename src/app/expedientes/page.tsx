@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { FolderOpen, ArrowRight } from "lucide-react";
 
+export const dynamic = 'force-dynamic';
+
 export default async function ExpedientesPage() {
     const cases = await prisma.case.findMany({
         include: {

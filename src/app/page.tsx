@@ -1,4 +1,4 @@
-
+import { Suspense } from "react";
 import { getDashboardStats, getTodayEvents } from "@/actions/dashboard-actions";
 import { getFinancialStats } from "@/actions/finance-actions";
 import { ExpensesWidget } from "@/components/dashboard/ExpensesWidget";
@@ -7,7 +7,7 @@ import Link from "next/link";
 
 export const dynamic = 'force-dynamic';
 
-export default async function DashboardPage() {
+export default async function Dashboard() {
   const stats = await getDashboardStats();
   const todayEvents = await getTodayEvents();
   const finance = await getFinancialStats();

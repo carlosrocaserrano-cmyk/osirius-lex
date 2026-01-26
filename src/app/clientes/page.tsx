@@ -1,5 +1,5 @@
-
-import { ClientList } from "@/components/clients/ClientList";
+import ClientList from "@/components/clients/ClientList";
+import NewClientForm from "@/components/clients/NewClientForm";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = 'force-dynamic';
