@@ -4,6 +4,7 @@
 import { CalendarGrid } from "@/components/agenda/CalendarGrid";
 import { AlertTriangle, Trophy } from "lucide-react";
 import { getUpcomingUrgentEvents } from "@/actions/agenda-actions";
+import AgendaHeader from "@/components/agenda/AgendaHeader";
 import { runChecks } from "@/actions/notification-actions";
 
 export const dynamic = 'force-dynamic';
