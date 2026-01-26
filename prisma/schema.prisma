@@ -1,0 +1,217 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Client {
+  id        String   @id @default(cuid())
+
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+
+  identityDoc String?  // CI or NIT
+  representative String? // For legal entities
+  metadata    String?  // JSON string for dynamic fields
+  status    String   @default("Activo") // Activo, Inactivo, En Espera
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  wantsInvoice Boolean @default(true)
+  
+  cases     Case[]
+  payments  Payment[]
+  documents Document[]
+  events    Event[]
+  paymentPlans PaymentPlan[]
+  expenses  Expense[]
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  title     String
+  message   String
+  type      String   // INFO, WARNING, ALERT
+  read      Boolean  @default(false)
+  link      String?  // Action URL
+  
+  createdAt DateTime @default(now())
+}
+
+
+model Case {
+  id          String   @id @default(cuid())
+  ianus       String?
+  expediente  String?
+  caratula    String
+  juzgado     String?
+  tipo        String?  // Civil, Penal, Sucesión...
+  estado      String   @default("En trámite")
+  
+  clientId    String
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  
+  events      Event[]
+  updates     CaseUpdate[]
+  expenses    Expense[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Payment {
+  id          String   @id @default(cuid())
+  concept     String
+  amount      Float
+  date        DateTime @default(now())
+
+  status      String   @default("Pagado")
+  
+  taxEnabled  Boolean  @default(false)
+  taxAmount   Float    @default(0) // Combined IVA + IT if enabled
+  
+  clientId    String
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+}
+
+model Document {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // received, returned, generated
+  date        DateTime @default(now())
+  
+  content     String?  // Text content if purely text-based
+  storagePath String?  // Path/URL if file is stored (e.g. PDF)
+
+  clientId    String?
+  client      Client?   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  generatedFromId String?
+  template    Template? @relation(fields: [generatedFromId], references: [id])
+}
+
+model Template {
+  id          String   @id @default(cuid())
+  name        String
+  category    String   // Contratos, Cartas, Demandas
+  content     String   // The actual text content with placeholders
+  variables   String   // JSON list of variables e.g. ["client_name", "date"]
+  
+  documents   Document[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ... existing models ...
+
+model Expense {
+  id          String   @id @default(cuid())
+  description String
+  amount      Float
+  category    String   // Operativo, Fijo, Variable
+  date        DateTime @default(now())
+  isDeductible Boolean @default(true)
+  receiptUrl  String?
+  
+  // Relations
+  clientId     String?
+  client       Client?  @relation(fields: [clientId], references: [id])
+  caseId       String?
+  case         Case?    @relation(fields: [caseId], references: [id])
+  
+  userId      String?  // Who registered this?
+  createdAt   DateTime @default(now())
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  date        DateTime
+  type        String   // audiencia, vencimiento, tramite, reunion
+  status      String   @default("Pendiente") // Pendiente, Completado
+
+  clientId    String?
+  client      Client?  @relation(fields: [clientId], references: [id])
+  
+  caseId      String?
+  case        Case?    @relation(fields: [caseId], references: [id])
+  
+  paymentPlanId String?
+  paymentPlan   PaymentPlan? @relation(fields: [paymentPlanId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PaymentPlan {
+  id            String   @id @default(cuid())
+  concept       String
+  totalAmount   Float
+  installments  Int
+  frequency     String
+  startDate     DateTime
+  status        String   @default("Activo")
+
+  clientId      String
+  client        Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  events        Event[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model CaseUpdate {
+  id          String   @id @default(cuid())
+  date        DateTime @default(now())
+  title       String   // e.g. "Presentación de Escrito"
+  description String   // content
+  response    String?  // result/response from institution
+  
+  caseId      String
+  case        Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+}
+
+
+model UserSettings {
+  id          String   @id @default("user_settings") // Singleton ID
+  name        String   @default("Usuario")
+  firmName    String?
+  email       String?
+  phone       String?
+  address     String?
+}
+
+
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  action      String   // CREATE, UPDATE, DELETE
+  entity      String   // Client, Payment, etc.
+  entityId    String?
+  details     String?
+  
+  user        String   @default("System")
+  timestamp   DateTime @default(now())
+}
+
+model GamificationProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique @default("default-user") // Singleton pattern for now
+  totalXP     Int      @default(0)
+  currentLevel Int     @default(1)
+  achievements String  @default("[]") // JSON list of badges
+  
+  lastAction  DateTime @default(now())
+}
