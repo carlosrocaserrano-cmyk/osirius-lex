@@ -8,9 +8,17 @@ import Link from "next/link";
 export const dynamic = 'force-dynamic';
 
 export default async function Dashboard() {
-  const stats = await getDashboardStats();
-  const todayEvents = await getTodayEvents();
-  const finance = await getFinancialStats();
+  let stats = { clients: 0, cases: 0 };
+  let todayEvents: any[] = [];
+  let finance = { netProfit: 0, totalIncome: 0, totalExpenses: 0, taxEstimate: 0 };
+
+  try {
+    stats = await getDashboardStats();
+    todayEvents = await getTodayEvents();
+    finance = await getFinancialStats();
+  } catch (error) {
+    console.error("Dashboard data fetch error:", error);
+  }
 
   return (
     <div className="space-y-6">
@@ -22,7 +30,9 @@ export default async function Dashboard() {
           <p className="text-gray-400">Resumen de actividad y estado financiero.</p>
         </div>
         <div className="text-right hidden md:block">
-          <p className="text-sm text-gray-400">{new Date().toLocaleDateString('es-BO', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+          <p className="text-sm text-gray-400">
+            {new Date().toLocaleDateString('es-BO', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </p>
         </div>
       </div>
 

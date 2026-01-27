@@ -36,6 +36,7 @@ export function ClientList({ initialClients }: ClientListProps) {
             if (newClientData.identityDoc) formData.append("identityDoc", newClientData.identityDoc);
             if (newClientData.address) formData.append("address", newClientData.address);
             if (newClientData.representative) formData.append("representative", newClientData.representative);
+            formData.append("wantsInvoice", String(newClientData.wantsInvoice));
 
             await createClient(formData);
 

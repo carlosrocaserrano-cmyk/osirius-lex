@@ -19,12 +19,12 @@ export function ClientCard({ client }: ClientCardProps) {
                 <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-lime-500 to-emerald-600 flex items-center justify-center text-black font-bold text-lg">
-                            {client.name.charAt(0)}
+                            {client.name?.charAt(0) || "?"}
                         </div>
                         <div>
-                            <h3 className="text-white font-bold truncate max-w-[150px]">{client.name}</h3>
-                            <span className={`text-xs px-2 py-0.5 rounded-full border ${statusColors[client.status]}`}>
-                                {client.status}
+                            <h3 className="text-white font-bold truncate max-w-[150px]">{client.name || "Sin Nombre"}</h3>
+                            <span className={`text-xs px-2 py-0.5 rounded-full border ${statusColors[client.status as keyof typeof statusColors] || 'bg-gray-500/10 text-gray-400 border-gray-500/20'}`}>
+                                {client.status || "Desconocido"}
                             </span>
                         </div>
                     </div>

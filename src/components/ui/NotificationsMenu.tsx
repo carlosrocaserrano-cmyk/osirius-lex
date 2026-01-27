@@ -23,9 +23,13 @@ export default function NotificationsMenu() {
     const router = useRouter();
 
     const fetchNotifications = async () => {
-        const data = await getNotifications();
-        setNotifications(data);
-        setUnreadCount(data.filter(n => !n.read).length);
+        try {
+            const data = await getNotifications();
+            setNotifications(data);
+            setUnreadCount(data.filter(n => !n.read).length);
+        } catch (error) {
+            console.error("Notifications fetch error:", error);
+        }
     };
 
     useEffect(() => {
@@ -93,8 +97,8 @@ export default function NotificationsMenu() {
                                     >
                                         <div className="flex justify-between items-start mb-1">
                                             <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${notif.type === 'ALERT' ? 'bg-red-900/50 text-red-200' :
-                                                    notif.type === 'WARNING' ? 'bg-orange-900/50 text-orange-200' :
-                                                        'bg-blue-900/50 text-blue-200'
+                                                notif.type === 'WARNING' ? 'bg-orange-900/50 text-orange-200' :
+                                                    'bg-blue-900/50 text-blue-200'
                                                 }`}>
                                                 {notif.type}
                                             </span>

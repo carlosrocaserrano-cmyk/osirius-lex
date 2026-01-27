@@ -14,7 +14,8 @@ export function NewClientForm({ onCancel, onSubmit }: NewClientFormProps) {
         phone: "",
         identityDoc: "",
         address: "",
-        representative: ""
+        representative: "",
+        wantsInvoice: false
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -110,6 +111,19 @@ export function NewClientForm({ onCancel, onSubmit }: NewClientFormProps) {
                             className="w-full bg-[#16161a] border border-gray-800 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-lime-500 transition-all"
                         />
                     </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-2">
+                    <input
+                        type="checkbox"
+                        id="wantsInvoice"
+                        checked={formData.wantsInvoice}
+                        onChange={(e) => setFormData({ ...formData, wantsInvoice: e.target.checked })}
+                        className="w-4 h-4 rounded border-gray-700 bg-[#16161a] text-lime-500 focus:ring-lime-500/50"
+                    />
+                    <label htmlFor="wantsInvoice" className="text-sm text-gray-400 select-none cursor-pointer">
+                        Cliente requiere facturación automática
+                    </label>
                 </div>
             </div>
 
