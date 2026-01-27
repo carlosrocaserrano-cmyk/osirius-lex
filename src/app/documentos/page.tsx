@@ -1,7 +1,9 @@
 import { FileText, Plus, File } from "lucide-react";
 import { getTemplates, getDocuments } from "@/actions/document-actions";
 import TemplateManager from "@/components/documents/TemplateManager";
-import GenerateDocumentButton from "@/components/documents/GenerateDocumentButton"; // Separate client component for the button to trigger modal
+import GenerateDocumentButton from "@/components/documents/GenerateDocumentButton";
+
+export const dynamic = 'force-dynamic';
 
 export default async function DocumentsPage() {
     const templates = await getTemplates();

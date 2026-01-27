@@ -1,4 +1,5 @@
 import FinancialDashboard from '@/components/finances/FinancialDashboard';
+import ExpenseTable from "@/components/finances/ExpenseTable";
 import { getFinancialStats, getRecentTransactions } from '@/actions/finance-actions';
 
 export const dynamic = 'force-dynamic';

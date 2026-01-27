@@ -7,6 +7,8 @@ import { getUpcomingUrgentEvents } from "@/actions/agenda-actions";
 import AgendaHeader from "@/components/agenda/AgendaHeader";
 import { runChecks } from "@/actions/notification-actions";
 
+export const dynamic = 'force-dynamic';
+
 export default async function AgendaPage() {
     // Run checks when loading the agenda
     await runChecks();
