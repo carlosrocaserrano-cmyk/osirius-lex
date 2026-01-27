@@ -13,6 +13,7 @@ interface AddCaseModalProps {
 
 export function AddCaseModal({ isOpen, onClose, clientId }: AddCaseModalProps) {
     const [isLoading, setIsLoading] = useState(false);
+    const [isJuridica, setIsJuridica] = useState(false);
 
     async function handleSubmit(formData: FormData) {
         setIsLoading(true);
@@ -61,12 +62,25 @@ export function AddCaseModal({ isOpen, onClose, clientId }: AddCaseModalProps) {
                     </div>
                 </div>
 
+                <div className="flex items-center gap-2 mb-2 p-3 bg-gray-800/50 rounded-lg border border-gray-700">
+                    <input type="checkbox" id="isJuridica" name="isJuridica" value="true" onChange={(e) => setIsJuridica(e.target.checked)} className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-lime-500" />
+                    <label htmlFor="isJuridica" className="text-sm text-gray-300 font-medium cursor-pointer">
+                        ¿Es Personería Jurídica? (Sin IANUS)
+                    </label>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-400 mb-1">IANUS</label>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                            {isJuridica ? "N° Trámite / Resolución" : "IANUS"}
+                        </label>
                         <div className="relative">
                             <Hash className="absolute left-3 top-2.5 text-gray-500" size={18} />
-                            <input name="ianus" placeholder="2024-..." className="w-full bg-[#25252d] border border-gray-700 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:border-lime-500 transition-colors" />
+                            {isJuridica ? (
+                                <input name="tramiteNumber" placeholder="Ej. Res. 123/24" className="w-full bg-[#25252d] border border-gray-700 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:border-lime-500 transition-colors" />
+                            ) : (
+                                <input name="ianus" placeholder="2024-..." className="w-full bg-[#25252d] border border-gray-700 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:border-lime-500 transition-colors" />
+                            )}
                         </div>
                     </div>
                     <div>

@@ -45,6 +45,14 @@ export function AddPaymentModal({ isOpen, onClose, clientId }: AddPaymentModalPr
                     </div>
                 </div>
 
+                <div className="flex items-center gap-2 p-3 bg-purple-500/10 rounded-lg border border-purple-500/30">
+                    <input type="checkbox" id="isExtra" name="isExtra" value="true" className="w-4 h-4 rounded border-purple-500 bg-purple-900/50 text-purple-400" />
+                    <label htmlFor="isExtra" className="text-sm text-purple-200 font-medium cursor-pointer">
+                        ¿Es un pago por servicio EXTRA?
+                        <span className="block text-xs text-purple-400/70 font-normal">No descontará del monto acordado global.</span>
+                    </label>
+                </div>
+
                 <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-yellow-200 text-sm">
                     <p>ℹ️ Se generará automáticamente un recibo PDF provisional.</p>
                 </div>

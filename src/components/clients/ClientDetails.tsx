@@ -178,8 +178,8 @@ export function ClientDetails({ client, templates = [] }: { client: any, templat
                                 </div>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 p-4 bg-[#16161a] rounded-xl border border-gray-800">
                                     <div>
-                                        <span className="block text-xs text-gray-500 uppercase">IANUS</span>
-                                        <span className="font-mono text-white tracking-wide">{process.ianus}</span>
+                                        <span className="block text-xs text-gray-500 uppercase">{process.isJuridica ? "N° Trámite" : "IANUS"}</span>
+                                        <span className="font-mono text-white tracking-wide">{process.isJuridica ? process.tramiteNumber : process.ianus}</span>
                                     </div>
                                     <div>
                                         <span className="block text-xs text-gray-500 uppercase">Expediente</span>
@@ -202,6 +202,46 @@ export function ClientDetails({ client, templates = [] }: { client: any, templat
             {/* FINANCE SECTION */}
             {activeTab === 'finance' && (
                 <div className="space-y-6">
+                    {/* Agreed Fee Progress */}
+                    <div className="glass-card p-6 border-l-4 border-l-blue-500">
+                        <div className="flex justify-between items-end mb-2">
+                            <div>
+                                <h3 className="text-gray-400 text-sm font-medium uppercase tracking-wider">Honorarios Totales Acordados</h3>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl font-bold text-white">${(client.totalAgreedFee || 0).toLocaleString()}</span>
+                                    <button onClick={() => setIsEditClientOpen(true)} className="text-xs text-blue-400 hover:text-white underline">Editar Monto</button>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <span className="text-2xl font-bold text-white">
+                                    ${client.payments.filter((p: any) => !p.isExtra).reduce((acc: number, p: any) => acc + p.amount, 0).toLocaleString()}
+                                </span>
+                                <span className="text-gray-500 text-sm block">Pagado (Normal)</span>
+                            </div>
+                        </div>
+
+                        {client.totalAgreedFee > 0 && (
+                            <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden relative">
+                                <div
+                                    className="bg-blue-500 h-full transition-all duration-500 ease-out flex items-center justify-center text-[10px] font-bold text-white"
+                                    style={{ width: `${Math.min(((client.payments.filter((p: any) => !p.isExtra).reduce((acc: number, p: any) => acc + p.amount, 0)) / client.totalAgreedFee) * 100, 100)}%` }}
+                                >
+                                    {Math.round(((client.payments.filter((p: any) => !p.isExtra).reduce((acc: number, p: any) => acc + p.amount, 0)) / client.totalAgreedFee) * 100)}%
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Extra Payments Summary */}
+                        <div className="mt-4 pt-4 border-t border-gray-700/50 flex justify-between items-center">
+                            <span className="text-purple-400 text-sm font-medium flex items-center gap-2">
+                                <DollarSign size={14} /> Servicios Extras Facturados
+                            </span>
+                            <span className="text-white font-bold">
+                                + ${client.payments.filter((p: any) => p.isExtra).reduce((acc: number, p: any) => acc + p.amount, 0).toLocaleString()}
+                            </span>
+                        </div>
+                    </div>
+
                     {/* Invoice Toggle */}
                     <div className="glass-card p-4 flex items-center justify-between border-l-4 border-l-lime-500">
                         <div>
@@ -281,13 +321,16 @@ export function ClientDetails({ client, templates = [] }: { client: any, templat
                         <h3 className="text-lg font-bold text-white mb-4">Historial de Pagos</h3>
                         <div className="space-y-3">
                             {client.payments.map((pay: any) => (
-                                <div key={pay.id} className="flex justify-between items-center p-4 bg-[#1a1a20] rounded-xl border border-gray-800">
+                                <div key={pay.id} className={`flex justify-between items-center p-4 rounded-xl border border-gray-800 ${pay.isExtra ? 'bg-purple-900/10 border-l-4 border-l-purple-500' : 'bg-[#1a1a20]'}`}>
                                     <div className="flex items-center gap-4">
-                                        <div className="p-2 bg-emerald-500/10 rounded-lg">
-                                            <DollarSign className="text-emerald-400" size={20} />
+                                        <div className={`p-2 rounded-lg ${pay.isExtra ? 'bg-purple-500/20' : 'bg-emerald-500/10'}`}>
+                                            <DollarSign className={pay.isExtra ? 'text-purple-400' : 'text-emerald-400'} size={20} />
                                         </div>
                                         <div>
-                                            <p className="font-bold text-white">{pay.concept}</p>
+                                            <div className="flex items-center gap-2">
+                                                <p className="font-bold text-white">{pay.concept}</p>
+                                                {pay.isExtra && <span className="px-1.5 py-0.5 rounded text-[10px] bg-purple-500/20 text-purple-300 font-bold border border-purple-500/30">EXTRA</span>}
+                                            </div>
                                             <p className="text-sm text-gray-500">{pay.date}</p>
                                         </div>
                                     </div>

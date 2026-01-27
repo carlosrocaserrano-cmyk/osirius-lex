@@ -27,6 +27,7 @@ model Client {
   updatedAt DateTime @updatedAt
   
   wantsInvoice Boolean @default(true)
+  totalAgreedFee Float @default(0)
   
   cases     Case[]
   payments  Payment[]
@@ -36,18 +37,6 @@ model Client {
   expenses  Expense[]
 }
 
-model Notification {
-  id        String   @id @default(cuid())
-  title     String
-  message   String
-  type      String   // INFO, WARNING, ALERT
-  read      Boolean  @default(false)
-  link      String?  // Action URL
-  
-  createdAt DateTime @default(now())
-}
-
-
 model Case {
   id          String   @id @default(cuid())
   ianus       String?
@@ -56,6 +45,9 @@ model Case {
   juzgado     String?
   tipo        String?  // Civil, Penal, Sucesión...
   estado      String   @default("En trámite")
+  
+  isJuridica  Boolean  @default(false)
+  tramiteNumber String? // Replaces IANUS if isJuridica is true
   
   clientId    String
   client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
@@ -77,6 +69,8 @@ model Payment {
 
   status      String   @default("Pagado")
   
+  isExtra     Boolean  @default(false)
+
   taxEnabled  Boolean  @default(false)
   taxAmount   Float    @default(0) // Combined IVA + IT if enabled
   

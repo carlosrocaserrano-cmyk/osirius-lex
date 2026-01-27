@@ -17,6 +17,7 @@ interface EditClientModalProps {
         identityDoc?: string;
         address?: string;
         representative?: string;
+        totalAgreedFee?: number;
     };
 }
 
@@ -88,6 +89,23 @@ export function EditClientModal({ isOpen, onClose, client }: EditClientModalProp
                             className="w-full bg-[#25252d] border border-gray-700 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:border-lime-500 transition-colors"
                         />
                     </div>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">Monto Acordado Global ($)</label>
+                    <div className="relative">
+                        {/* Reusing DollarSign if available or generic icon */}
+                        <div className="absolute left-3 top-2.5 text-gray-500 text-lg">$</div>
+                        <input
+                            name="totalAgreedFee"
+                            type="number"
+                            step="0.01"
+                            defaultValue={client.totalAgreedFee}
+                            placeholder="0.00"
+                            className="w-full bg-[#25252d] border border-gray-700 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:border-lime-500 transition-colors"
+                        />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Este monto se usará para calcular el progreso de pagos.</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

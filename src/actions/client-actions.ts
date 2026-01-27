@@ -14,9 +14,11 @@ export async function getClients() {
 export async function createCase(clientId: string, formData: FormData) {
     const caratula = formData.get("caratula") as string;
     const juzgado = formData.get("juzgado") as string;
-    const ianus = formData.get("ianus") as string;
+    const ianus = formData.get("ianus") as string; // Will be empty if juridica
     const expediente = formData.get("expediente") as string;
     const tipo = formData.get("tipo") as string;
+    const isJuridica = formData.get("isJuridica") === 'true';
+    const tramiteNumber = formData.get("tramiteNumber") as string;
 
     if (!clientId || !caratula) {
         throw new Error("Missing required fields");
@@ -26,7 +28,9 @@ export async function createCase(clientId: string, formData: FormData) {
         data: {
             caratula,
             juzgado,
-            ianus,
+            ianus: isJuridica ? null : ianus,
+            tramiteNumber: isJuridica ? tramiteNumber : null,
+            isJuridica,
             expediente,
             tipo,
             clientId,
@@ -42,6 +46,7 @@ export async function createCase(clientId: string, formData: FormData) {
 export async function createPayment(clientId: string, formData: FormData) {
     const concept = formData.get("concept") as string;
     const amount = parseFloat(formData.get("amount") as string);
+    const isExtra = formData.get("isExtra") === 'true';
 
     if (!clientId || !concept || isNaN(amount)) {
         throw new Error("Missing required fields");
@@ -53,11 +58,12 @@ export async function createPayment(clientId: string, formData: FormData) {
             amount,
             clientId,
             status: "Pagado",
-            date: new Date()
+            date: new Date(),
+            isExtra
         }
     });
 
-    await addXP(50, "Pago Registrado");
+    await addXP(isExtra ? 30 : 50, "Pago Registrado");
 
     revalidatePath(`/clientes/${clientId}`);
 }
@@ -187,6 +193,7 @@ export async function updateClient(clientId: string, formData: FormData) {
     const representative = formData.get("representative") as string;
     const metadata = formData.get("metadata") as string;
     const wantsInvoice = formData.get("wantsInvoice") === 'true';
+    const totalAgreedFee = parseFloat(formData.get("totalAgreedFee") as string) || 0;
 
     if (!clientId || !name) {
         throw new Error("Missing required fields");
@@ -203,7 +210,8 @@ export async function updateClient(clientId: string, formData: FormData) {
             address,
             representative,
             metadata,
-            wantsInvoice
+            wantsInvoice,
+            totalAgreedFee
         }
     });
 

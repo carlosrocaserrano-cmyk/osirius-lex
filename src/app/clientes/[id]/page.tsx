@@ -36,11 +36,12 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
         email: client.email || "",
         phone: client.phone || "",
         status: client.status,
-        metadata: client.metadata, // Important for the dynamic fields
-        identityDoc: client.identityDoc, // Important for profile
-        address: client.address,     // Important for profile
-        representative: client.representative, // Important for profile
+        metadata: client.metadata,
+        identityDoc: client.identityDoc,
+        address: client.address,
+        representative: client.representative,
         wantsInvoice: client.wantsInvoice,
+        totalAgreedFee: client.totalAgreedFee, // [NEW]
         cases: client.cases.map(c => ({
             id: c.id,
             ianus: c.ianus || '',
@@ -48,19 +49,21 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
             caratula: c.caratula,
             juzgado: c.juzgado || '',
             tipo: c.tipo || '',
-            estado: c.estado
+            estado: c.estado,
+            isJuridica: c.isJuridica, // [NEW]
+            tramiteNumber: c.tramiteNumber // [NEW]
         })),
         documents: {
             received: client.documents.filter(d => d.type === 'received').map(d => ({
                 id: d.id,
                 name: d.name,
-                date: d.date.toLocaleDateString(),
+                date: d.date.toISOString().split('T')[0],
                 type: d.type
             })),
             returned: client.documents.filter(d => d.type === 'returned').map(d => ({
                 id: d.id,
                 name: d.name,
-                date: d.date.toLocaleDateString(),
+                date: d.date.toISOString().split('T')[0],
                 type: d.type
             }))
         },
@@ -68,8 +71,9 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
             id: p.id,
             concept: p.concept,
             amount: p.amount,
-            date: p.date.toLocaleDateString(),
-            status: p.status
+            date: p.date.toISOString().split('T')[0],
+            status: p.status,
+            isExtra: p.isExtra // [NEW]
         })),
         paymentPlans: client.paymentPlans.map(pp => ({
             id: pp.id,
@@ -78,14 +82,14 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
             installments: pp.installments,
             frequency: pp.frequency,
             status: pp.status,
-            startDate: pp.startDate.toLocaleDateString()
+            startDate: pp.startDate.toISOString().split('T')[0]
         })),
         expenses: client.expenses?.map(e => ({
             id: e.id,
             description: e.description,
             amount: e.amount,
             category: e.category,
-            date: e.date.toLocaleDateString(),
+            date: e.date.toISOString().split('T')[0],
             case: e.case ? { caratula: e.case.caratula, expediente: e.case.expediente } : null
         })) || []
     };
