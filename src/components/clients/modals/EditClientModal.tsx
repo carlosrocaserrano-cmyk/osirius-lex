@@ -1,7 +1,7 @@
 "use client";
 
 import { Modal } from "@/components/ui/Modal";
-import { updateClient } from "@/actions/client-actions";
+import { updateClient, deleteClient } from "@/actions/client-actions";
 import { useState } from "react";
 import { User, Mail, Phone, Activity } from "lucide-react";
 
@@ -154,6 +154,58 @@ export function EditClientModal({ isOpen, onClose, client }: EditClientModalProp
                     {isLoading ? "Guardando..." : "Guardar Cambios"}
                 </button>
             </form>
+
+            {/* DANGER ZONE */}
+            <div className="mt-8 pt-8 border-t border-red-900/30">
+                <h4 className="text-red-500 font-bold mb-2">Zona de Peligro</h4>
+                <p className="text-sm text-gray-500 mb-4">
+                    Eliminar este cliente borrará también todos sus casos, pagos y documentos. Esta acción no se puede deshacer.
+                </p>
+
+                <DeleteClientSection clientId={client.id} />
+            </div>
         </Modal >
+    );
+}
+
+function DeleteClientSection({ clientId }: { clientId: string }) {
+    const [confirmText, setConfirmText] = useState("");
+    const [isDeleting, setIsDeleting] = useState(false);
+    // Use window.location for full refresh after delete since we are in a modal
+
+    const handleDelete = async () => {
+        if (confirmText !== "ELIMINAR") return;
+        setIsDeleting(true);
+        try {
+            await deleteClient(clientId);
+            // Force redirect to clients list
+            window.location.href = "/clientes";
+        } catch (error) {
+            console.error(error);
+            setIsDeleting(false);
+        }
+    };
+
+    return (
+        <div className="bg-red-900/10 border border-red-900/30 rounded-lg p-4">
+            <label className="block text-xs text-red-400 mb-2">
+                Escribe <strong>ELIMINAR</strong> para confirmar:
+            </label>
+            <div className="flex gap-2">
+                <input
+                    value={confirmText}
+                    onChange={(e) => setConfirmText(e.target.value)}
+                    placeholder="ELIMINAR"
+                    className="flex-1 bg-[#1a1a20] border border-red-900/50 rounded px-3 py-2 text-red-500 placeholder-red-900/50 focus:outline-none focus:border-red-500"
+                />
+                <button
+                    onClick={handleDelete}
+                    disabled={confirmText !== "ELIMINAR" || isDeleting}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded transition-colors"
+                >
+                    {isDeleting ? "..." : "Eliminar"}
+                </button>
+            </div>
+        </div>
     );
 }

@@ -218,6 +218,20 @@ export async function updateClient(clientId: string, formData: FormData) {
     revalidatePath(`/clientes/${clientId}`);
 }
 
+export async function deleteClient(clientId: string) {
+    if (!clientId) throw new Error("Client ID is required");
+
+    // Prisma Cascade Delete handles relations, but we can be explicit if needed.
+    // Ensure user has permissions (if auth was fully implemented, for now check ID)
+
+    await prisma.client.delete({
+        where: { id: clientId }
+    });
+
+    revalidatePath("/");
+    revalidatePath("/clientes");
+}
+
 export async function updateCase(caseId: string, clientId: string, formData: FormData) {
     const caratula = formData.get("caratula") as string;
     const juzgado = formData.get("juzgado") as string;

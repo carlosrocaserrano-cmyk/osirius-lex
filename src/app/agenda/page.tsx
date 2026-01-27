@@ -6,6 +6,7 @@ import { AlertTriangle, Trophy } from "lucide-react";
 import { getUpcomingUrgentEvents } from "@/actions/agenda-actions";
 import AgendaHeader from "@/components/agenda/AgendaHeader";
 import { runChecks } from "@/actions/notification-actions";
+import { CalendarSyncWidget } from "@/components/agenda/CalendarSyncWidget";
 
 export const dynamic = 'force-dynamic';
 
@@ -49,6 +50,8 @@ export default async function AgendaPage() {
                         <p className="text-gray-500 text-sm">No hay urgencias próximas. ¡Bien hecho!</p>
                     )}
                 </div>
+
+                <CalendarSyncWidget />
 
                 <div className="mt-8 pt-6 border-t border-gray-800">
                     <h3 className="text-lg font-bold text-white mb-4">Metas Diarias</h3>

@@ -15,6 +15,9 @@ import { DynamicFieldEditor } from "./DynamicFieldEditor";
 import GenerateDocumentModal from "../documents/GenerateDocumentModal";
 import ExpenseTable from "../finances/ExpenseTable";
 import { updateClient } from "@/actions/client-actions";
+import { summarizeCase } from "@/actions/ai-actions";
+import { Sparkles, BrainCircuit } from "lucide-react";
+import { useTransition } from "react";
 
 export function ClientDetails({ client, templates = [] }: { client: any, templates?: any[] }) {
     const [activeTab, setActiveTab] = useState<'cases' | 'finance' | 'docs' | 'profile'>('cases');
@@ -25,6 +28,17 @@ export function ClientDetails({ client, templates = [] }: { client: any, templat
     const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
     const [isGenerateOpen, setIsGenerateOpen] = useState(false);
     const [documentType, setDocumentType] = useState<'received' | 'returned'>('received');
+
+    // AI Summary State
+    const [summaryResult, setSummaryResult] = useState<{ id: string, text: string } | null>(null);
+    const [isSummarizing, startSummaryTransition] = useTransition();
+
+    const handleSummarize = (caseId: string) => {
+        startSummaryTransition(async () => {
+            const summary = await summarizeCase(caseId);
+            setSummaryResult({ id: caseId, text: summary });
+        });
+    };
 
     // Edit States
     const [isEditClientOpen, setIsEditClientOpen] = useState(false);
@@ -184,6 +198,24 @@ export function ClientDetails({ client, templates = [] }: { client: any, templat
                                     <div>
                                         <span className="block text-xs text-gray-500 uppercase">Expediente</span>
                                         <span className="font-mono text-white tracking-wide">{process.expediente}</span>
+                                    </div>
+                                    <div className="col-span-2">
+                                        {/* AI Summary Button */}
+                                        <button
+                                            onClick={() => handleSummarize(process.id)}
+                                            disabled={isSummarizing}
+                                            className="text-xs flex items-center gap-1 text-purple-400 hover:text-purple-300 transition-colors mb-1"
+                                        >
+                                            {isSummarizing && summaryResult?.id !== process.id ? <BrainCircuit size={12} /> : <Sparkles size={12} />}
+                                            {isSummarizing ? "Analizando..." : "Resumir con IA"}
+                                        </button>
+
+                                        {/* Summary Result Display */}
+                                        {summaryResult && summaryResult.id === process.id && (
+                                            <div className="mt-2 p-3 bg-purple-900/20 border border-purple-500/30 rounded-lg text-xs text-purple-200 animate-in fade-in zoom-in-95 leading-relaxed whitespace-pre-wrap">
+                                                {summaryResult.text}
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="col-span-2">
                                         <span className="block text-xs text-gray-500 uppercase">Estado Actual</span>
