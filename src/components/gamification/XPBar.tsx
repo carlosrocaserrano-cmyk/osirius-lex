@@ -9,7 +9,9 @@ export default function XPBar() {
     const [profile, setProfile] = useState<any>(null);
 
     useEffect(() => {
-        getGamificationProfile().then(setProfile);
+        getGamificationProfile()
+            .then(setProfile)
+            .catch(err => console.error("XPBar error:", err));
     }, []);
 
     if (!profile) return (

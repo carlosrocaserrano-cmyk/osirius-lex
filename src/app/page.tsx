@@ -30,7 +30,9 @@ export default async function Dashboard() {
           <p className="text-gray-400">Resumen de actividad y estado financiero.</p>
         </div>
         <div className="text-right hidden md:block">
-          <p className="text-sm text-gray-400">{new Date().toLocaleDateString('es-BO', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+          <p className="text-sm text-gray-400">
+            {new Date().toLocaleDateString('es-BO', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </p>
         </div>
       </div>
 
