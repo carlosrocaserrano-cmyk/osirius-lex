@@ -112,7 +112,6 @@ export function NewClientForm({ onCancel, onSubmit }: NewClientFormProps) {
                         />
                     </div>
                 </div>
-
                 <div className="flex items-center gap-2 pt-2">
                     <input
                         type="checkbox"
@@ -125,7 +124,7 @@ export function NewClientForm({ onCancel, onSubmit }: NewClientFormProps) {
                         Cliente requiere facturación automática
                     </label>
                 </div>
-            </div>
+            </div >
 
             <div className="flex gap-3 pt-2">
                 <button
@@ -142,6 +141,6 @@ export function NewClientForm({ onCancel, onSubmit }: NewClientFormProps) {
                     Guardar Cliente
                 </button>
             </div>
-        </form>
+        </form >
     );
 }
