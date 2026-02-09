@@ -3,6 +3,8 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { addXP } from "@/actions/gamification-actions";
+import { writeFile, mkdir } from "fs/promises";
+import { join } from "path";
 
 export async function getClients() {
     return await prisma.client.findMany({
@@ -195,24 +197,46 @@ export async function updateClient(clientId: string, formData: FormData) {
     const wantsInvoice = formData.get("wantsInvoice") === 'true';
     const totalAgreedFee = parseFloat(formData.get("totalAgreedFee") as string) || 0;
 
+    const photo = formData.get('photo') as File;
+    let photoUrl = undefined;
+
+    if (photo && photo.size > 0) {
+        try {
+            const buffer = Buffer.from(await photo.arrayBuffer());
+            const filename = `${Date.now()}-${photo.name.replace(/\s/g, '_')}`;
+            const uploadDir = join(process.cwd(), 'public/uploads');
+            await mkdir(uploadDir, { recursive: true });
+            await writeFile(join(uploadDir, filename), buffer);
+            photoUrl = `/uploads/${filename}`;
+        } catch (error) {
+            console.error("Error uploading photo:", error);
+        }
+    }
+
     if (!clientId || !name) {
         throw new Error("Missing required fields");
     }
 
+    const updateData: any = {
+        name,
+        email,
+        phone,
+        status,
+        identityDoc,
+        address,
+        representative,
+        metadata,
+        wantsInvoice,
+        totalAgreedFee
+    };
+
+    if (photoUrl) {
+        updateData.photoUrl = photoUrl;
+    }
+
     await prisma.client.update({
         where: { id: clientId },
-        data: {
-            name,
-            email,
-            phone,
-            status,
-            identityDoc,
-            address,
-            representative,
-            metadata,
-            wantsInvoice,
-            totalAgreedFee
-        }
+        data: updateData
     });
 
     revalidatePath(`/clientes/${clientId}`);
@@ -316,6 +340,23 @@ export async function createClient(formData: FormData) {
     const address = formData.get("address") as string;
     const representative = formData.get("representative") as string;
     const wantsInvoice = formData.get("wantsInvoice") === 'true';
+    const metadata = formData.get("metadata") as string;
+
+    const photo = formData.get('photo') as File;
+    let photoUrl = null;
+
+    if (photo && photo.size > 0) {
+        try {
+            const buffer = Buffer.from(await photo.arrayBuffer());
+            const filename = `${Date.now()}-${photo.name.replace(/\s/g, '_')}`;
+            const uploadDir = join(process.cwd(), 'public/uploads');
+            await mkdir(uploadDir, { recursive: true });
+            await writeFile(join(uploadDir, filename), buffer);
+            photoUrl = `/uploads/${filename}`;
+        } catch (error) {
+            console.error("Error uploading photo:", error);
+        }
+    }
 
     if (!name) {
         throw new Error("Missing required fields");
@@ -330,7 +371,9 @@ export async function createClient(formData: FormData) {
             address,
             representative,
             status: 'Activo',
-            wantsInvoice
+            wantsInvoice,
+            metadata,
+            photoUrl
         }
     });
 
@@ -358,4 +401,30 @@ export async function createClient(formData: FormData) {
     });
 
     revalidatePath("/clientes");
+}
+
+
+
+export async function createMeetingSummary(caseId: string, clientId: string, content: string) {
+    if (!caseId || !content) throw new Error("Missing fields");
+
+    await prisma.meetingSummary.create({
+        data: {
+            caseId,
+            content,
+            date: new Date()
+        }
+    });
+
+    revalidatePath(`/clientes/${clientId}`);
+}
+
+export async function deleteMeetingSummary(summaryId: string, clientId: string) {
+    if (!summaryId) throw new Error("Missing summary ID");
+
+    await prisma.meetingSummary.delete({
+        where: { id: summaryId }
+    });
+
+    revalidatePath(`/clientes/${clientId}`);
 }

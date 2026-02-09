@@ -10,7 +10,8 @@ import { AddPaymentPlanModal } from "./modals/AddPaymentPlanModal";
 import { EditClientModal } from "./modals/EditClientModal";
 import { EditCaseModal } from "../cases/modals/EditCaseModal";
 import { EditPaymentPlanModal } from "./modals/EditPaymentPlanModal";
-import { deleteCase, deletePayment, deleteDocument } from "@/actions/client-actions";
+import { AddSummaryModal } from "./modals/AddSummaryModal";
+import { deleteCase, deletePayment, deleteDocument, deleteMeetingSummary } from "@/actions/client-actions";
 import { DynamicFieldEditor } from "./DynamicFieldEditor";
 import GenerateDocumentModal from "../documents/GenerateDocumentModal";
 import ExpenseTable from "../finances/ExpenseTable";
@@ -23,6 +24,8 @@ export function ClientDetails({ client, templates = [] }: { client: any, templat
     const [activeTab, setActiveTab] = useState<'cases' | 'finance' | 'docs' | 'profile'>('cases');
     const [isAddCaseOpen, setIsAddCaseOpen] = useState(false);
     const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false);
+    const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+    const [selectedSummaryCaseId, setSelectedSummaryCaseId] = useState<string | null>(null);
     const [isAddPaymentPlanOpen, setIsAddPaymentPlanOpen] = useState(false);
     const [isAddDocumentOpen, setIsAddDocumentOpen] = useState(false);
     const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
@@ -98,6 +101,12 @@ export function ClientDetails({ client, templates = [] }: { client: any, templat
         }
     };
 
+    const handleDeleteSummary = async (id: string) => {
+        if (confirm("¿Eliminar este resumen?")) {
+            await deleteMeetingSummary(id, client.id);
+        }
+    };
+
     return (
         <div className="space-y-6">
             {/* Header & Back */}
@@ -107,6 +116,13 @@ export function ClientDetails({ client, templates = [] }: { client: any, templat
                 </Link>
                 <div className="flex-1">
                     <div className="flex items-center gap-3">
+                        {client.photoUrl && (
+                            <img
+                                src={client.photoUrl}
+                                alt="Client"
+                                className="w-12 h-12 rounded-full object-cover border-2 border-lime-500/50"
+                            />
+                        )}
                         <h1 className="text-3xl font-bold text-white">{client.name}</h1>
                         <button
                             onClick={() => setIsEditClientOpen(true)}
@@ -192,7 +208,7 @@ export function ClientDetails({ client, templates = [] }: { client: any, templat
                                 </div>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 p-4 bg-[#16161a] rounded-xl border border-gray-800">
                                     <div>
-                                        <span className="block text-xs text-gray-500 uppercase">{process.isJuridica ? "N° Trámite" : "IANUS"}</span>
+                                        <span className="block text-xs text-gray-500 uppercase">{process.isJuridica ? "N° Trámite" : "NUREJ"}</span>
                                         <span className="font-mono text-white tracking-wide">{process.isJuridica ? process.tramiteNumber : process.ianus}</span>
                                     </div>
                                     <div>
@@ -221,6 +237,36 @@ export function ClientDetails({ client, templates = [] }: { client: any, templat
                                         <span className="block text-xs text-gray-500 uppercase">Estado Actual</span>
                                         <span className="text-white font-medium">{process.estado}</span>
                                     </div>
+
+                                    {/* Meeting Summaries Section */}
+                                    <div className="col-span-2 md:col-span-4 mt-2 border-t border-gray-800 pt-3">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Resúmenes de Reuniones</h4>
+                                            <button
+                                                onClick={() => { setSelectedSummaryCaseId(process.id); setIsSummaryModalOpen(true); }}
+                                                className="text-xs text-lime-400 hover:text-lime-300 flex items-center gap-1"
+                                            >
+                                                + Agregar Nota
+                                            </button>
+                                        </div>
+                                        <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                                            {process.summaries?.map((summary: any) => (
+                                                <div key={summary.id} className="bg-[#1e1e24] p-2 rounded text-sm group relative">
+                                                    <p className="text-gray-300 whitespace-pre-wrap text-xs">{summary.content}</p>
+                                                    <div className="flex justify-between items-center mt-1 pt-1 border-t border-gray-800/50">
+                                                        <span className="text-[10px] text-gray-600">{new Date(summary.date).toLocaleDateString()}</span>
+                                                        <button
+                                                            onClick={() => handleDeleteSummary(summary.id)}
+                                                            className="text-gray-700 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        >
+                                                            <Trash2 size={12} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {!process.summaries?.length && <p className="text-xs text-gray-600 italic">No hay resúmenes registrados.</p>}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         ))}
@@ -232,159 +278,161 @@ export function ClientDetails({ client, templates = [] }: { client: any, templat
             )}
 
             {/* FINANCE SECTION */}
-            {activeTab === 'finance' && (
-                <div className="space-y-6">
-                    {/* Agreed Fee Progress */}
-                    <div className="glass-card p-6 border-l-4 border-l-blue-500">
-                        <div className="flex justify-between items-end mb-2">
-                            <div>
-                                <h3 className="text-gray-400 text-sm font-medium uppercase tracking-wider">Honorarios Totales Acordados</h3>
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-3xl font-bold text-white">${(client.totalAgreedFee || 0).toLocaleString()}</span>
-                                    <button onClick={() => setIsEditClientOpen(true)} className="text-xs text-blue-400 hover:text-white underline">Editar Monto</button>
+            {
+                activeTab === 'finance' && (
+                    <div className="space-y-6">
+                        {/* Agreed Fee Progress */}
+                        <div className="glass-card p-6 border-l-4 border-l-blue-500">
+                            <div className="flex justify-between items-end mb-2">
+                                <div>
+                                    <h3 className="text-gray-400 text-sm font-medium uppercase tracking-wider">Honorarios Totales Acordados</h3>
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="text-3xl font-bold text-white">${(client.totalAgreedFee || 0).toLocaleString()}</span>
+                                        <button onClick={() => setIsEditClientOpen(true)} className="text-xs text-blue-400 hover:text-white underline">Editar Monto</button>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-2xl font-bold text-white">
+                                        ${client.payments.filter((p: any) => !p.isExtra).reduce((acc: number, p: any) => acc + p.amount, 0).toLocaleString()}
+                                    </span>
+                                    <span className="text-gray-500 text-sm block">Pagado (Normal)</span>
                                 </div>
                             </div>
-                            <div className="text-right">
-                                <span className="text-2xl font-bold text-white">
-                                    ${client.payments.filter((p: any) => !p.isExtra).reduce((acc: number, p: any) => acc + p.amount, 0).toLocaleString()}
+
+                            {client.totalAgreedFee > 0 && (
+                                <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden relative">
+                                    <div
+                                        className="bg-blue-500 h-full transition-all duration-500 ease-out flex items-center justify-center text-[10px] font-bold text-white"
+                                        style={{ width: `${Math.min(((client.payments.filter((p: any) => !p.isExtra).reduce((acc: number, p: any) => acc + p.amount, 0)) / client.totalAgreedFee) * 100, 100)}%` }}
+                                    >
+                                        {Math.round(((client.payments.filter((p: any) => !p.isExtra).reduce((acc: number, p: any) => acc + p.amount, 0)) / client.totalAgreedFee) * 100)}%
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Extra Payments Summary */}
+                            <div className="mt-4 pt-4 border-t border-gray-700/50 flex justify-between items-center">
+                                <span className="text-purple-400 text-sm font-medium flex items-center gap-2">
+                                    <DollarSign size={14} /> Servicios Extras Facturados
                                 </span>
-                                <span className="text-gray-500 text-sm block">Pagado (Normal)</span>
+                                <span className="text-white font-bold">
+                                    + ${client.payments.filter((p: any) => p.isExtra).reduce((acc: number, p: any) => acc + p.amount, 0).toLocaleString()}
+                                </span>
                             </div>
                         </div>
 
-                        {client.totalAgreedFee > 0 && (
-                            <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden relative">
-                                <div
-                                    className="bg-blue-500 h-full transition-all duration-500 ease-out flex items-center justify-center text-[10px] font-bold text-white"
-                                    style={{ width: `${Math.min(((client.payments.filter((p: any) => !p.isExtra).reduce((acc: number, p: any) => acc + p.amount, 0)) / client.totalAgreedFee) * 100, 100)}%` }}
-                                >
-                                    {Math.round(((client.payments.filter((p: any) => !p.isExtra).reduce((acc: number, p: any) => acc + p.amount, 0)) / client.totalAgreedFee) * 100)}%
-                                </div>
+                        {/* Invoice Toggle */}
+                        <div className="glass-card p-4 flex items-center justify-between border-l-4 border-l-lime-500">
+                            <div>
+                                <h3 className="font-bold text-white">Facturación</h3>
+                                <p className="text-sm text-gray-400">Habilitar si el cliente requiere Factura A / Responsable Inscripto</p>
                             </div>
-                        )}
-
-                        {/* Extra Payments Summary */}
-                        <div className="mt-4 pt-4 border-t border-gray-700/50 flex justify-between items-center">
-                            <span className="text-purple-400 text-sm font-medium flex items-center gap-2">
-                                <DollarSign size={14} /> Servicios Extras Facturados
-                            </span>
-                            <span className="text-white font-bold">
-                                + ${client.payments.filter((p: any) => p.isExtra).reduce((acc: number, p: any) => acc + p.amount, 0).toLocaleString()}
-                            </span>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    className="sr-only peer"
+                                    defaultChecked={client.wantsInvoice}
+                                    onChange={(e) => handleInvoiceToggle(e.target.checked)}
+                                />
+                                <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-lime-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-lime-500"></div>
+                            </label>
                         </div>
-                    </div>
 
-                    {/* Invoice Toggle */}
-                    <div className="glass-card p-4 flex items-center justify-between border-l-4 border-l-lime-500">
-                        <div>
-                            <h3 className="font-bold text-white">Facturación</h3>
-                            <p className="text-sm text-gray-400">Habilitar si el cliente requiere Factura A / Responsable Inscripto</p>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                                type="checkbox"
-                                className="sr-only peer"
-                                defaultChecked={client.wantsInvoice}
-                                onChange={(e) => handleInvoiceToggle(e.target.checked)}
-                            />
-                            <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-lime-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-lime-500"></div>
-                        </label>
-                    </div>
-
-                    <div className="glass-card p-8 flex flex-col items-center justify-center gap-4 text-center border-dashed border-2 border-gray-700 hover:border-lime-500/50 transition-colors group">
-                        <div className="w-16 h-16 rounded-full bg-gray-800 group-hover:bg-lime-500/20 flex items-center justify-center transition-colors">
-                            <DollarSign size={32} className="text-gray-400 group-hover:text-lime-400" />
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-bold text-white">Generar Nuevo Recibo</h3>
-                            <p className="text-sm text-gray-400">Crea un comprobante de pago profesional en PDF.</p>
-                        </div>
-                        <button
-                            onClick={() => setIsAddPaymentOpen(true)}
-                            className="px-6 py-2 bg-lime-500 hover:bg-lime-400 text-black font-bold rounded-lg shadow-lg shadow-lime-500/20 transition-all"
-                        >
-                            Crear Recibo Ahora
-                        </button>
-                    </div>
-
-                    <div className="flex justify-between items-center">
-                        <h3 className="text-lg font-bold text-white">Planes de Pago Activos</h3>
-                        <button onClick={() => setIsAddPaymentPlanOpen(true)} className="text-sm text-lime-400 hover:text-white underline">
-                            + Crear Plan
-                        </button>
-                    </div>
-
-                    <div className="grid gap-3">
-                        {client.paymentPlans?.map((plan: any) => (
-                            <div key={plan.id} className="p-4 bg-[#1a1a20] rounded-xl border border-gray-800 border-l-4 border-l-lime-500">
-                                <div className="flex justify-between items-start mb-2">
-                                    <div>
-                                        <h4 className="font-bold text-white">{plan.concept}</h4>
-                                        <p className="text-xs text-gray-400">Inicio: {plan.startDate} • {plan.frequency}</p>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <button onClick={() => handleEditPlan(plan)} className="text-gray-500 hover:text-lime-400 p-1 transition-colors">
-                                            <Edit size={14} />
-                                        </button>
-                                        <span className={`px-2 py-1 text-xs rounded font-bold ${plan.status === 'Activo' ? 'bg-lime-500/10 text-lime-400' : plan.status === 'Cancelado' ? 'bg-red-500/10 text-red-400' : 'bg-gray-500/10 text-gray-400'}`}>{plan.status}</span>
-                                    </div>
-                                </div>
-                                <div className="flex justify-between items-center mt-3">
-                                    <div className="text-sm text-gray-300">
-                                        <span className="block text-xs text-gray-500">Monto Total</span>
-                                        ${plan.totalAmount.toLocaleString()}
-                                    </div>
-                                    <div className="text-sm text-gray-300 text-right">
-                                        <span className="block text-xs text-gray-500">Cuotas</span>
-                                        {plan.installments}
-                                    </div>
-                                </div>
+                        <div className="glass-card p-8 flex flex-col items-center justify-center gap-4 text-center border-dashed border-2 border-gray-700 hover:border-lime-500/50 transition-colors group">
+                            <div className="w-16 h-16 rounded-full bg-gray-800 group-hover:bg-lime-500/20 flex items-center justify-center transition-colors">
+                                <DollarSign size={32} className="text-gray-400 group-hover:text-lime-400" />
                             </div>
-                        ))}
-                        {!client.paymentPlans?.length && (
-                            <p className="text-gray-500 text-sm italic">No hay planes de pago activos.</p>
-                        )}
-                    </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-white">Generar Nuevo Recibo</h3>
+                                <p className="text-sm text-gray-400">Crea un comprobante de pago profesional en PDF.</p>
+                            </div>
+                            <button
+                                onClick={() => setIsAddPaymentOpen(true)}
+                                className="px-6 py-2 bg-lime-500 hover:bg-lime-400 text-black font-bold rounded-lg shadow-lg shadow-lime-500/20 transition-all"
+                            >
+                                Crear Recibo Ahora
+                            </button>
+                        </div>
 
-                    {/* EXPENSE TABLE INTEGRATION */}
-                    <ExpenseTable expenses={client.expenses || []} clientId={client.id} />
+                        <div className="flex justify-between items-center">
+                            <h3 className="text-lg font-bold text-white">Planes de Pago Activos</h3>
+                            <button onClick={() => setIsAddPaymentPlanOpen(true)} className="text-sm text-lime-400 hover:text-white underline">
+                                + Crear Plan
+                            </button>
+                        </div>
 
-                    <div>
-                        <h3 className="text-lg font-bold text-white mb-4">Historial de Pagos</h3>
-                        <div className="space-y-3">
-                            {client.payments.map((pay: any) => (
-                                <div key={pay.id} className={`flex justify-between items-center p-4 rounded-xl border border-gray-800 ${pay.isExtra ? 'bg-purple-900/10 border-l-4 border-l-purple-500' : 'bg-[#1a1a20]'}`}>
-                                    <div className="flex items-center gap-4">
-                                        <div className={`p-2 rounded-lg ${pay.isExtra ? 'bg-purple-500/20' : 'bg-emerald-500/10'}`}>
-                                            <DollarSign className={pay.isExtra ? 'text-purple-400' : 'text-emerald-400'} size={20} />
-                                        </div>
+                        <div className="grid gap-3">
+                            {client.paymentPlans?.map((plan: any) => (
+                                <div key={plan.id} className="p-4 bg-[#1a1a20] rounded-xl border border-gray-800 border-l-4 border-l-lime-500">
+                                    <div className="flex justify-between items-start mb-2">
                                         <div>
-                                            <div className="flex items-center gap-2">
-                                                <p className="font-bold text-white">{pay.concept}</p>
-                                                {pay.isExtra && <span className="px-1.5 py-0.5 rounded text-[10px] bg-purple-500/20 text-purple-300 font-bold border border-purple-500/30">EXTRA</span>}
-                                            </div>
-                                            <p className="text-sm text-gray-500">{pay.date}</p>
+                                            <h4 className="font-bold text-white">{plan.concept}</h4>
+                                            <p className="text-xs text-gray-400">Inicio: {plan.startDate} • {plan.frequency}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <button onClick={() => handleEditPlan(plan)} className="text-gray-500 hover:text-lime-400 p-1 transition-colors">
+                                                <Edit size={14} />
+                                            </button>
+                                            <span className={`px-2 py-1 text-xs rounded font-bold ${plan.status === 'Activo' ? 'bg-lime-500/10 text-lime-400' : plan.status === 'Cancelado' ? 'bg-red-500/10 text-red-400' : 'bg-gray-500/10 text-gray-400'}`}>{plan.status}</span>
                                         </div>
                                     </div>
-                                    <div className="text-right flex flex-col items-end gap-2">
-                                        <div>
-                                            <p className="font-bold text-white text-lg">${pay.amount.toLocaleString()}</p>
+                                    <div className="flex justify-between items-center mt-3">
+                                        <div className="text-sm text-gray-300">
+                                            <span className="block text-xs text-gray-500">Monto Total</span>
+                                            ${plan.totalAmount.toLocaleString()}
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <button onClick={() => window.open(`/recibo/${pay.id}`, '_blank')} className="text-xs text-lime-400 hover:text-white flex items-center gap-1">
-                                                <Download size={12} /> Descargar PDF
-                                            </button>
-                                            <button onClick={() => handleDeletePayment(pay.id)} className="text-gray-600 hover:text-red-400 transition-colors" title="Eliminar pago">
-                                                <Trash2 size={16} />
-                                            </button>
+                                        <div className="text-sm text-gray-300 text-right">
+                                            <span className="block text-xs text-gray-500">Cuotas</span>
+                                            {plan.installments}
                                         </div>
                                     </div>
                                 </div>
                             ))}
+                            {!client.paymentPlans?.length && (
+                                <p className="text-gray-500 text-sm italic">No hay planes de pago activos.</p>
+                            )}
+                        </div>
+
+                        {/* EXPENSE TABLE INTEGRATION */}
+                        <ExpenseTable expenses={client.expenses || []} clientId={client.id} />
+
+                        <div>
+                            <h3 className="text-lg font-bold text-white mb-4">Historial de Pagos</h3>
+                            <div className="space-y-3">
+                                {client.payments.map((pay: any) => (
+                                    <div key={pay.id} className={`flex justify-between items-center p-4 rounded-xl border border-gray-800 ${pay.isExtra ? 'bg-purple-900/10 border-l-4 border-l-purple-500' : 'bg-[#1a1a20]'}`}>
+                                        <div className="flex items-center gap-4">
+                                            <div className={`p-2 rounded-lg ${pay.isExtra ? 'bg-purple-500/20' : 'bg-emerald-500/10'}`}>
+                                                <DollarSign className={pay.isExtra ? 'text-purple-400' : 'text-emerald-400'} size={20} />
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="font-bold text-white">{pay.concept}</p>
+                                                    {pay.isExtra && <span className="px-1.5 py-0.5 rounded text-[10px] bg-purple-500/20 text-purple-300 font-bold border border-purple-500/30">EXTRA</span>}
+                                                </div>
+                                                <p className="text-sm text-gray-500">{pay.date}</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right flex flex-col items-end gap-2">
+                                            <div>
+                                                <p className="font-bold text-white text-lg">${pay.amount.toLocaleString()}</p>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <button onClick={() => window.open(`/recibo/${pay.id}`, '_blank')} className="text-xs text-lime-400 hover:text-white flex items-center gap-1">
+                                                    <Download size={12} /> Descargar PDF
+                                                </button>
+                                                <button onClick={() => handleDeletePayment(pay.id)} className="text-gray-600 hover:text-red-400 transition-colors" title="Eliminar pago">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* DOCUMENTS SECTION */}
             {
@@ -557,6 +605,19 @@ export function ClientDetails({ client, templates = [] }: { client: any, templat
                         onClose={() => setIsEditPaymentPlanOpen(false)}
                         clientId={client.id}
                         plan={selectedPlan}
+                    />
+                )
+            }
+
+
+
+            {
+                selectedSummaryCaseId && (
+                    <AddSummaryModal
+                        isOpen={isSummaryModalOpen}
+                        onClose={() => setIsSummaryModalOpen(false)}
+                        clientId={client.id}
+                        caseId={selectedSummaryCaseId}
                     />
                 )
             }

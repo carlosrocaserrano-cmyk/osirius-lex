@@ -29,14 +29,27 @@ export function ClientList({ initialClients }: ClientListProps) {
         try {
             const formData = new FormData();
             formData.append("name", newClientData.name);
-            formData.append("email", newClientData.email);
-            formData.append("phone", newClientData.phone);
+            if (newClientData.email) formData.append("email", newClientData.email);
+
+            // Handle Multiple Phones
+            const phones = newClientData.phones || [];
+            if (phones.length > 0) {
+                formData.append("phone", phones[0]); // Primary
+                if (phones.length > 1) {
+                    const metadata = { additionalPhones: phones.slice(1) };
+                    formData.append("metadata", JSON.stringify(metadata));
+                }
+            }
 
             // New Fields
             if (newClientData.identityDoc) formData.append("identityDoc", newClientData.identityDoc);
             if (newClientData.address) formData.append("address", newClientData.address);
             if (newClientData.representative) formData.append("representative", newClientData.representative);
             formData.append("wantsInvoice", String(newClientData.wantsInvoice));
+
+            if (newClientData.photo) {
+                formData.append("photo", newClientData.photo);
+            }
 
             await createClient(formData);
 

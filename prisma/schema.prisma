@@ -7,7 +7,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -35,6 +35,8 @@ model Client {
   events    Event[]
   paymentPlans PaymentPlan[]
   expenses  Expense[]
+  
+  photoUrl  String?
 }
 
 model Case {
@@ -56,6 +58,7 @@ model Case {
   events      Event[]
   updates     CaseUpdate[]
   expenses    Expense[]
+  summaries   MeetingSummary[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -209,4 +212,16 @@ model GamificationProfile {
   achievements String  @default("[]") // JSON list of badges
   
   lastAction  DateTime @default(now())
+}
+
+model MeetingSummary {
+  id        String   @id @default(cuid())
+  content   String
+  date      DateTime @default(now())
+
+  caseId    String
+  case      Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

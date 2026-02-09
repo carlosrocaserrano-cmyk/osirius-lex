@@ -3,7 +3,7 @@
 import { Modal } from "@/components/ui/Modal";
 import { updateClient, deleteClient } from "@/actions/client-actions";
 import { useState } from "react";
-import { User, Mail, Phone, Activity } from "lucide-react";
+import { User, Mail, Phone, Activity, Plus, X, Camera } from "lucide-react";
 
 interface EditClientModalProps {
     isOpen: boolean;
@@ -18,15 +18,70 @@ interface EditClientModalProps {
         address?: string;
         representative?: string;
         totalAgreedFee?: number;
+        metadata?: string;
+        photoUrl?: string;
     };
 }
 
 export function EditClientModal({ isOpen, onClose, client }: EditClientModalProps) {
     const [isLoading, setIsLoading] = useState(false);
 
-    async function handleSubmit(formData: FormData) {
+    // Parse initial phones
+    const initialPhones = [client.phone || ""];
+    if (client.metadata) {
+        try {
+            const meta = JSON.parse(client.metadata);
+            if (meta.additionalPhones && Array.isArray(meta.additionalPhones)) {
+                initialPhones.push(...meta.additionalPhones);
+            }
+        } catch (e) { }
+    }
+    const [phones, setPhones] = useState<string[]>(initialPhones.length > 0 ? initialPhones : [""]);
+    const [photo, setPhoto] = useState<File | null>(null);
+
+    const handlePhoneChange = (index: number, value: string) => {
+        const newPhones = [...phones];
+        newPhones[index] = value;
+        setPhones(newPhones);
+    };
+
+    const addPhone = () => {
+        setPhones([...phones, ""]);
+    };
+
+    const removePhone = (index: number) => {
+        const newPhones = phones.filter((_, i) => i !== index);
+        setPhones(newPhones.length ? newPhones : [""]);
+    };
+
+    const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setPhoto(e.target.files[0]);
+        }
+    };
+
+    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
         setIsLoading(true);
         try {
+            const formData = new FormData(e.currentTarget);
+
+            // Handle Photo
+            if (photo) {
+                formData.set("photo", photo);
+            }
+
+            // Handle Phones
+            if (phones.length > 0) {
+                formData.set('phone', phones[0]);
+                let currentMeta = {};
+                if (client.metadata) {
+                    try { currentMeta = JSON.parse(client.metadata); } catch { }
+                }
+                const newMeta = { ...currentMeta, additionalPhones: phones.slice(1) };
+                formData.set('metadata', JSON.stringify(newMeta));
+            }
+
             await updateClient(client.id, formData);
             onClose();
         } catch (error) {
@@ -38,7 +93,22 @@ export function EditClientModal({ isOpen, onClose, client }: EditClientModalProp
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Editar Cliente">
-            <form action={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="flex justify-center mb-4">
+                    <div className="relative group cursor-pointer">
+                        <div className="w-20 h-20 rounded-full bg-[#25252d] border-2 border-dashed border-gray-600 flex items-center justify-center overflow-hidden transition-colors hover:border-lime-500">
+                            {photo ? (
+                                <img src={URL.createObjectURL(photo)} onClick={(e) => e.stopPropagation()} className="w-full h-full object-cover" />
+                            ) : client.photoUrl ? (
+                                <img src={client.photoUrl} className="w-full h-full object-cover" />
+                            ) : (
+                                <Camera className="text-gray-500 group-hover:text-lime-500" size={24} />
+                            )}
+                        </div>
+                        <input type="file" accept="image/*" onChange={handlePhotoChange} className="absolute inset-0 opacity-0 cursor-pointer" />
+                    </div>
+                </div>
+
                 <div>
                     <label className="block text-sm font-medium text-gray-400 mb-1">Nombre Completo</label>
                     <div className="relative">
@@ -94,7 +164,6 @@ export function EditClientModal({ isOpen, onClose, client }: EditClientModalProp
                 <div>
                     <label className="block text-sm font-medium text-gray-400 mb-1">Monto Acordado Global ($)</label>
                     <div className="relative">
-                        {/* Reusing DollarSign if available or generic icon */}
                         <div className="absolute left-3 top-2.5 text-gray-500 text-lg">$</div>
                         <input
                             name="totalAgreedFee"
@@ -121,16 +190,33 @@ export function EditClientModal({ isOpen, onClose, client }: EditClientModalProp
                             />
                         </div>
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-400 mb-1">Teléfono</label>
-                        <div className="relative">
-                            <Phone className="absolute left-3 top-2.5 text-gray-500" size={18} />
-                            <input
-                                name="phone"
-                                defaultValue={client.phone}
-                                className="w-full bg-[#25252d] border border-gray-700 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:border-lime-500 transition-colors"
-                            />
+                    <div className="col-span-2 md:col-span-1">
+                        <div className="flex justify-between items-center mb-1">
+                            <label className="text-sm font-medium text-gray-400">Teléfonos</label>
+                            <button type="button" onClick={addPhone} className="text-xs text-lime-400 hover:text-white flex items-center gap-1">
+                                <Plus size={12} /> Agregar
+                            </button>
                         </div>
+                        {phones.map((phone, index) => (
+                            <div key={index} className="relative mb-2">
+                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={14} />
+                                <input
+                                    type="tel"
+                                    value={phone}
+                                    onChange={(e) => handlePhoneChange(index, e.target.value)}
+                                    className="w-full bg-[#25252d] border border-gray-700 rounded-lg py-2 pl-8 pr-8 text-white focus:outline-none focus:border-lime-500 transition-colors text-sm"
+                                />
+                                {phones.length > 1 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => removePhone(index)}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-red-400"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                )}
+                            </div>
+                        ))}
                     </div>
                 </div>
 

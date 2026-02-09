@@ -10,7 +10,9 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
     const client = await prisma.client.findUnique({
         where: { id },
         include: {
-            cases: true,
+            cases: {
+                include: { summaries: { orderBy: { date: 'desc' } } }
+            },
             payments: true,
             documents: true,
             paymentPlans: true,
@@ -37,6 +39,7 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
         phone: client.phone || "",
         status: client.status,
         metadata: client.metadata,
+        photoUrl: client.photoUrl,
         identityDoc: client.identityDoc,
         address: client.address,
         representative: client.representative,
@@ -51,7 +54,8 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
             tipo: c.tipo || '',
             estado: c.estado,
             isJuridica: c.isJuridica, // [NEW]
-            tramiteNumber: c.tramiteNumber // [NEW]
+            tramiteNumber: c.tramiteNumber, // [NEW]
+            summaries: c.summaries // [NEW]
         })),
         documents: {
             received: client.documents.filter(d => d.type === 'received').map(d => ({
